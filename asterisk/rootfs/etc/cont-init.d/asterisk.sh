@@ -14,7 +14,9 @@ bashio::log.info "Configuring certificate..."
 
 certfile="/ssl/$(bashio::config 'certfile')"
 keyfile="/ssl/$(bashio::config 'keyfile')"
-readonly certfile keyfile
+# Get assigned Ingress port
+ingress_port=$(bashio::addon.ingress_port)
+readonly certfile keyfile ingress_port
 
 if ! bashio::fs.file_exists "${certfile}"; then
     bashio::exit.nok "Certificate file at ${certfile} was not found"
@@ -49,7 +51,8 @@ bashio::var.json \
 
 bashio::var.json \
     certfile "${target_certfile}" \
-    keyfile "${target_keyfile}" |
+    keyfile "${target_keyfile}" \
+    ingress_port "^${ingress_port}" |
     tempio \
     -template /usr/share/tempio/http.conf.gtpl \
     -out /config/asterisk/http.conf
